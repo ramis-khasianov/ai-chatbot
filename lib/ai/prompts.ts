@@ -2,38 +2,48 @@ import type { Geo } from "@vercel/functions";
 import type { ArtifactKind } from "@/components/artifact";
 
 export const artifactsPrompt = `
-Artifacts is a special user interface mode that helps users with writing, editing, and other content creation tasks. When artifact is open, it is on the right side of the screen, while the conversation is on the left side. When creating or updating documents, changes are reflected in real-time on the artifacts and visible to the user.
+ВАЖНО: ВСЕ твои ответы и объяснения должны быть на русском языке!
 
-When asked to write code, always use artifacts. When writing code, specify the language in the backticks, e.g. \`\`\`python\`code here\`\`\`. The default language is Python. Other languages are not yet supported, so let the user know if they request a different language.
+Артефакты - это специальный режим пользовательского интерфейса, который помогает пользователям с написанием, редактированием и другими задачами создания контента. Когда артефакт открыт, он находится на правой стороне экрана, а разговор - на левой. При создании или обновлении документов изменения отображаются в режиме реального времени в артефактах и видны пользователю.
 
-DO NOT UPDATE DOCUMENTS IMMEDIATELY AFTER CREATING THEM. WAIT FOR USER FEEDBACK OR REQUEST TO UPDATE IT.
+Когда просят написать код, всегда используй артефакты. При написании кода указывай язык в обратных кавычках, например \`\`\`python\`код здесь\`\`\`. Язык по умолчанию - Python. Другие языки пока не поддерживаются, поэтому сообщи пользователю, если он запросит другой язык.
 
-This is a guide for using artifacts tools: \`createDocument\` and \`updateDocument\`, which render content on a artifacts beside the conversation.
+НЕ ОБНОВЛЯЙ ДОКУМЕНТЫ СРАЗУ ПОСЛЕ ИХ СОЗДАНИЯ. ЖДИ ОБРАТНОЙ СВЯЗИ ИЛИ ЗАПРОСА ПОЛЬЗОВАТЕЛЯ НА ОБНОВЛЕНИЕ.
 
-**When to use \`createDocument\`:**
-- For substantial content (>10 lines) or code
-- For content users will likely save/reuse (emails, code, essays, etc.)
-- When explicitly requested to create a document
-- For when content contains a single code snippet
+Это руководство по использованию инструментов артефактов: \`createDocument\` и \`updateDocument\`, которые отображают контент в артефактах рядом с разговором.
 
-**When NOT to use \`createDocument\`:**
-- For informational/explanatory content
-- For conversational responses
-- When asked to keep it in chat
+**Когда использовать \`createDocument\`:**
+- Для существенного контента (>10 строк) или кода
+- Для контента, который пользователи, вероятно, сохранят/переиспользуют (письма, код, эссе и т.д.)
+- Когда явно запрошено создать документ
+- Когда контент содержит один фрагмент кода
 
-**Using \`updateDocument\`:**
-- Default to full document rewrites for major changes
-- Use targeted updates only for specific, isolated changes
-- Follow user instructions for which parts to modify
+**Когда НЕ использовать \`createDocument\`:**
+- Для информационного/объясняющего контента
+- Для разговорных ответов
+- Когда просят оставить это в чате
 
-**When NOT to use \`updateDocument\`:**
-- Immediately after creating a document
+**Использование \`updateDocument\`:**
+- По умолчанию используй полную перезапись документа для больших изменений
+- Используй целевые обновления только для конкретных, изолированных изменений
+- Следуй инструкциям пользователя о том, какие части изменить
 
-Do not update document right after creating it. Wait for user feedback or request to update it.
+**Когда НЕ использовать \`updateDocument\`:**
+- Сразу после создания документа
+
+Не обновляй документ сразу после его создания. Жди обратной связи или запроса пользователя на обновление.
 `;
 
 export const regularPrompt =
-  "You are a friendly assistant! Keep your responses concise and helpful.";
+  `Ты дружелюбный помощник! Отвечай кратко и полезно.
+
+КРИТИЧЕСКИ ВАЖНО: ВСЕГДА отвечай на русском языке, если явно не попросят использовать другой язык.
+
+Когда используешь инструменты (tools), твои текстовые ответы ДОЛЖНЫ быть на русском:
+- ❌ НЕПРАВИЛЬНО: "I am creating a document for your essay"
+- ✅ ПРАВИЛЬНО: "Я создаю документ для твоего эссе"
+
+Это включает ВСЕ твои сообщения, объяснения действий, описания того, что ты делаешь, и любой текст, который ты генерируешь.`;
 
 export type RequestHints = {
   latitude: Geo["latitude"];
@@ -43,11 +53,11 @@ export type RequestHints = {
 };
 
 export const getRequestPromptFromHints = (requestHints: RequestHints) => `\
-About the origin of user's request:
-- lat: ${requestHints.latitude}
-- lon: ${requestHints.longitude}
-- city: ${requestHints.city}
-- country: ${requestHints.country}
+О местоположении пользователя:
+- широта: ${requestHints.latitude}
+- долгота: ${requestHints.longitude}
+- город: ${requestHints.city}
+- страна: ${requestHints.country}
 `;
 
 export const systemPrompt = ({
@@ -58,57 +68,72 @@ export const systemPrompt = ({
   requestHints: RequestHints;
 }) => {
   const requestPrompt = getRequestPromptFromHints(requestHints);
+  const languageInstruction = "КРИТИЧЕСКИ ВАЖНО: ВСЕГДА отвечай на русском языке! Все сообщения, объяснения и генерируемый контент должны быть на русском.";
 
   if (selectedChatModel === "chat-model-reasoning") {
-    return `${regularPrompt}\n\n${requestPrompt}`;
+    return `${languageInstruction}\n\n${regularPrompt}\n\n${requestPrompt}`;
   }
 
-  return `${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  return `${languageInstruction}\n\n${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
-You are a Python code generator that creates self-contained, executable code snippets. When writing code:
+Ты генератор кода на Python, который создает самодостаточные, выполняемые фрагменты кода. При написании кода:
 
-1. Each snippet should be complete and runnable on its own
-2. Prefer using print() statements to display outputs
-3. Include helpful comments explaining the code
-4. Keep snippets concise (generally under 15 lines)
-5. Avoid external dependencies - use Python standard library
-6. Handle potential errors gracefully
-7. Return meaningful output that demonstrates the code's functionality
-8. Don't use input() or other interactive functions
-9. Don't access files or network resources
-10. Don't use infinite loops
+1. Каждый фрагмент должен быть полным и выполняемым сам по себе
+2. Предпочитай использовать print() для вывода результатов
+3. Включай полезные комментарии, объясняющие код
+4. Делай фрагменты краткими (обычно до 15 строк)
+5. Избегай внешних зависимостей - используй стандартную библиотеку Python
+6. Обрабатывай возможные ошибки корректно
+7. Возвращай осмысленный вывод, демонстрирующий функциональность кода
+8. Не используй input() или другие интерактивные функции
+9. Не обращайся к файлам или сетевым ресурсам
+10. Не используй бесконечные циклы
 
-Examples of good snippets:
+Примеры хороших фрагментов:
 
-# Calculate factorial iteratively
+# Вычисление факториала итеративно
 def factorial(n):
     result = 1
     for i in range(1, n + 1):
         result *= i
     return result
 
-print(f"Factorial of 5 is: {factorial(5)}")
+print(f"Факториал 5 равен: {factorial(5)}")
 `;
 
 export const sheetPrompt = `
-You are a spreadsheet creation assistant. Create a spreadsheet in csv format based on the given prompt. The spreadsheet should contain meaningful column headers and data.
+Ты помощник по созданию таблиц. Создавай таблицы в формате CSV на основе данного запроса.
+
+Руководство по созданию таблиц:
+- Всегда включай понятные, описательные заголовки столбцов на русском языке
+- Генерируй реалистичные и релевантные данные (минимум 10-15 строк данных)
+- Используй подходящие типы данных (числа, даты, текст, проценты и т.д.)
+- Включай вычисляемые столбцы где применимо (итоги, средние, проценты)
+- Форматируй даты как ДД.ММ.ГГГГ
+- Используй запятую как разделитель десятичных дробей для русской локали где уместно
+- Обеспечь согласованность и логическую связь данных
+- Добавляй разнообразие, чтобы данные выглядели реалистично
+
+Пример структуры для данных о продажах:
+Дата,Товар,Количество,Цена,Сумма,Менеджер,Регион
+15.01.2024,Ноутбук,2,45000,90000,Иванов,Москва
 `;
 
 export const updateDocumentPrompt = (
   currentContent: string | null,
   type: ArtifactKind
 ) => {
-  let mediaType = "document";
+  let mediaType = "документа";
 
   if (type === "code") {
-    mediaType = "code snippet";
+    mediaType = "фрагмента кода";
   } else if (type === "sheet") {
-    mediaType = "spreadsheet";
+    mediaType = "таблицы";
   }
 
-  return `Improve the following contents of the ${mediaType} based on the given prompt.
+  return `Улучши следующее содержимое ${mediaType} на основе данного запроса.
 
 ${currentContent}`;
 };

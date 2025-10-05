@@ -12,19 +12,19 @@ type UpdateDocumentProps = {
 
 export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
   tool({
-    description: "Update a document with the given description.",
+    description: "Обновить документ согласно данному описанию.",
     inputSchema: z.object({
-      id: z.string().describe("The ID of the document to update"),
+      id: z.string().describe("ID документа для обновления"),
       description: z
         .string()
-        .describe("The description of changes that need to be made"),
+        .describe("Описание изменений, которые нужно внести"),
     }),
     execute: async ({ id, description }) => {
       const document = await getDocumentById({ id });
 
       if (!document) {
         return {
-          error: "Document not found",
+          error: "Документ не найден",
         };
       }
 
@@ -56,7 +56,7 @@ export const updateDocument = ({ session, dataStream }: UpdateDocumentProps) =>
         id,
         title: document.title,
         kind: document.kind,
-        content: "The document has been updated successfully.",
+        content: "Документ был успешно обновлен.",
       };
     },
   });

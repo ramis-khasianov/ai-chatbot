@@ -17,18 +17,18 @@ export const requestSuggestions = ({
   dataStream,
 }: RequestSuggestionsProps) =>
   tool({
-    description: "Request suggestions for a document",
+    description: "Запросить предложения для документа",
     inputSchema: z.object({
       documentId: z
         .string()
-        .describe("The ID of the document to request edits"),
+        .describe("ID документа для запроса правок"),
     }),
     execute: async ({ documentId }) => {
       const document = await getDocumentById({ id: documentId });
 
       if (!document || !document.content) {
         return {
-          error: "Document not found",
+          error: "Документ не найден",
         };
       }
 
@@ -87,7 +87,7 @@ export const requestSuggestions = ({
         id: documentId,
         title: document.title,
         kind: document.kind,
-        message: "Suggestions have been added to the document",
+        message: "Предложения были добавлены к документу",
       };
     },
   });
