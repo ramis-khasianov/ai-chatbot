@@ -38,7 +38,7 @@ function PureChatHeader({
           variant="outline"
         >
           <PlusIcon />
-          <span className="md:sr-only">New Chat</span>
+          <span className="md:sr-only">Новый чат</span>
         </Button>
       )}
 
@@ -60,7 +60,7 @@ function PureChatHeader({
           target="_noblank"
         >
           <VercelIcon size={16} />
-          Deploy with Vercel
+          Развернуть с Vercel
         </Link>
       </Button>
     </header>

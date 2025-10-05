@@ -191,7 +191,7 @@ function PureMultimodalInput({
       const { error } = await response.json();
       toast.error(error);
     } catch (_error) {
-      toast.error("Failed to upload file, please try again!");
+      toast.error("Не удалось загрузить файл, попробуйте еще раз!");
     }
   }, []);
 
@@ -258,7 +258,7 @@ function PureMultimodalInput({
         onSubmit={(event) => {
           event.preventDefault();
           if (status !== "ready") {
-            toast.error("Please wait for the model to finish its response!");
+            toast.error("Пожалуйста, дождитесь завершения ответа модели!");
           } else {
             submitForm();
           }
@@ -306,7 +306,7 @@ function PureMultimodalInput({
             maxHeight={200}
             minHeight={44}
             onChange={handleInput}
-            placeholder="Send a message..."
+            placeholder="Отправить сообщение..."
             ref={textareaRef}
             rows={1}
             value={input}

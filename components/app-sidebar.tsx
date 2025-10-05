@@ -34,7 +34,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
               }}
             >
               <span className="cursor-pointer rounded-md px-2 font-semibold text-lg hover:bg-muted">
-                Chatbot
+                Чат-бот
               </span>
             </Link>
             <Tooltip>
@@ -53,7 +53,7 @@ export function AppSidebar({ user }: { user: User | undefined }) {
                 </Button>
               </TooltipTrigger>
               <TooltipContent align="end" className="hidden md:block">
-                New Chat
+                Новый чат
               </TooltipContent>
             </Tooltip>
           </div>
