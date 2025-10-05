@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
 import { useActionState, useEffect, useState } from "react";
 import { AuthForm } from "@/components/auth-form";
 import { SubmitButton } from "@/components/submit-button";
@@ -10,8 +8,6 @@ import { toast } from "@/components/toast";
 import { type RegisterActionState, register } from "../actions";
 
 export default function Page() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [isSuccessful, setIsSuccessful] = useState(false);
 
@@ -21,8 +17,6 @@ export default function Page() {
       status: "idle",
     }
   );
-
-  const { update: updateSession } = useSession();
 
   useEffect(() => {
     if (state.status === "user_exists") {
@@ -36,13 +30,11 @@ export default function Page() {
       });
     } else if (state.status === "success") {
       toast({ type: "success", description: "Аккаунт успешно создан!" });
-
       setIsSuccessful(true);
-      updateSession();
-      router.refresh();
+      // Force a full page reload to get fresh session
+      window.location.href = "/";
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.status, router.refresh, updateSession]);
+  }, [state.status]);
 
   const handleSubmit = (formData: FormData) => {
     setEmail(formData.get("email") as string);

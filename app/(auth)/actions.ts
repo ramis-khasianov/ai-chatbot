@@ -1,5 +1,6 @@
 "use server";
 
+import { AuthError } from "next-auth";
 import { z } from "zod";
 
 import { createUser, getUser } from "@/lib/db/queries";
@@ -25,11 +26,15 @@ export const login = async (
       password: formData.get("password"),
     });
 
-    await signIn("credentials", {
+    const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
+
+    if (result?.error) {
+      return { status: "failed" };
+    }
 
     return { status: "success" };
   } catch (error) {
@@ -67,11 +72,16 @@ export const register = async (
       return { status: "user_exists" } as RegisterActionState;
     }
     await createUser(validatedData.email, validatedData.password);
-    await signIn("credentials", {
+
+    const result = await signIn("credentials", {
       email: validatedData.email,
       password: validatedData.password,
       redirect: false,
     });
+
+    if (result?.error) {
+      return { status: "failed" };
+    }
 
     return { status: "success" };
   } catch (error) {
