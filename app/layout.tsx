@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { SWRProvider } from "@/components/swr-provider";
 
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
@@ -82,9 +83,11 @@ export default async function RootLayout({
           enableSystem
         >
           <Toaster position="top-center" />
-          <SessionProvider session={session} refetchOnWindowFocus={false}>
-            {children}
-          </SessionProvider>
+          <SWRProvider>
+            <SessionProvider session={session} refetchOnWindowFocus={false}>
+              {children}
+            </SessionProvider>
+          </SWRProvider>
         </ThemeProvider>
       </body>
     </html>
