@@ -1,10 +1,18 @@
-import { gateway } from "@ai-sdk/gateway";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import {
   customProvider,
   extractReasoningMiddleware,
   wrapLanguageModel,
 } from "ai";
 import { isTestEnvironment } from "../constants";
+
+// Configure your OpenAI-compatible API endpoint
+// This can be OpenAI, Ollama, LM Studio, vLLM, or any OpenAI-compatible API
+const openai = createOpenAICompatible({
+  baseURL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+  apiKey: process.env.OPENAI_API_KEY || "local",
+  name: "openai-compatible"
+});
 
 export const myProvider = isTestEnvironment
   ? (() => {
@@ -25,12 +33,24 @@ export const myProvider = isTestEnvironment
     })()
   : customProvider({
       languageModels: {
-        "chat-model": gateway.languageModel("xai/grok-2-vision-1212"),
+        // Main chat model - use your preferred model
+        "chat-model": openai(
+          process.env.CHAT_MODEL || "gpt-4o"
+        ),
+        // Reasoning model with chain-of-thought
         "chat-model-reasoning": wrapLanguageModel({
-          model: gateway.languageModel("xai/grok-3-mini"),
+          model: openai(
+            process.env.REASONING_MODEL || "gpt-4o"
+          ),
           middleware: extractReasoningMiddleware({ tagName: "think" }),
         }),
-        "title-model": gateway.languageModel("xai/grok-2-1212"),
-        "artifact-model": gateway.languageModel("xai/grok-2-1212"),
+        // Model for generating titles
+        "title-model": openai(
+          process.env.TITLE_MODEL || "gpt-4o-mini"
+        ),
+        // Model for artifacts/documents
+        "artifact-model": openai(
+          process.env.ARTIFACT_MODEL || "gpt-4o"
+        ),
       },
     });
