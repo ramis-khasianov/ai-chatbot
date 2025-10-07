@@ -1,8 +1,19 @@
-import { put } from "@vercel/blob";
+import { Client } from "minio";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { auth } from "@/app/(auth)/auth";
+
+// Initialize MinIO client
+const minioClient = new Client({
+  endPoint: process.env.MINIO_ENDPOINT || "localhost",
+  port: parseInt(process.env.MINIO_PORT || "9000"),
+  useSSL: process.env.MINIO_USE_SSL === "true",
+  accessKey: process.env.MINIO_ACCESS_KEY || "",
+  secretKey: process.env.MINIO_SECRET_KEY || "",
+});
+
+const BUCKET_NAME = process.env.MINIO_BUCKET || "chatbot-uploads";
 
 // Use Blob instead of File since File is not available in Node.js environment
 const FileSchema = z.object({
@@ -51,11 +62,37 @@ export async function POST(request: Request) {
     const fileBuffer = await file.arrayBuffer();
 
     try {
-      const data = await put(`${filename}`, fileBuffer, {
-        access: "public",
-      });
+      // Ensure bucket exists
+      const bucketExists = await minioClient.bucketExists(BUCKET_NAME);
+      if (!bucketExists) {
+        await minioClient.makeBucket(BUCKET_NAME, "us-east-1");
+      }
 
-      return NextResponse.json(data);
+      // Upload file to MinIO
+      const objectName = `${Date.now()}-${filename}`;
+      await minioClient.putObject(
+        BUCKET_NAME,
+        objectName,
+        Buffer.from(fileBuffer),
+        fileBuffer.byteLength,
+        {
+          "Content-Type": file.type,
+        }
+      );
+
+      // Generate presigned URL for accessing the file
+      const url = await minioClient.presignedGetObject(
+        BUCKET_NAME,
+        objectName,
+        24 * 60 * 60 // URL valid for 24 hours
+      );
+
+      return NextResponse.json({
+        url,
+        pathname: objectName,
+        contentType: file.type,
+        contentDisposition: `attachment; filename="${filename}"`,
+      });
     } catch (_error) {
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
