@@ -19,7 +19,7 @@ export const createDocument = ({ session, dataStream }: CreateDocumentProps) =>
       "Создать документ для письма или создания контента. Этот инструмент вызовет другие функции, которые сгенерируют содержимое документа на основе заголовка и типа.",
     inputSchema: z.object({
       title: z.string().describe("Название документа"),
-      kind: z.enum(artifactKinds).describe("Тип артефакта: text (текст), code (код), sheet (таблица), image (изображение)"),
+      kind: z.enum(artifactKinds).describe("Тип артефакта: text (текст), sheet (таблица), image (изображение)"),
     }),
     execute: async ({ title, kind }) => {
       const id = generateUUID();
