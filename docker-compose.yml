@@ -1,0 +1,48 @@
+version: "3.8"
+
+services:
+  ai-chatbot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      # Аутентификация
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+      - SECURE_COOKIES=${SECURE_COOKIES}
+
+      # AI модели
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - CHAT_MODEL=${CHAT_MODEL}
+      - REASONING_MODEL=${REASONING_MODEL}
+      - TITLE_MODEL=${TITLE_MODEL}
+      - ARTIFACT_MODEL=${ARTIFACT_MODEL}
+      - CHAT_MODEL_TITLE=${CHAT_MODEL_TITLE}
+      - REASONING_MODEL_TITLE=${REASONING_MODEL_TITLE}
+
+      # База данных
+      - POSTGRES_URL=${POSTGRES_URL}
+
+      # Redis (опционально)
+      - REDIS_URL=${REDIS_URL}
+
+      # MinIO
+      - MINIO_ENDPOINT=${MINIO_ENDPOINT}
+      - MINIO_PORT=${MINIO_PORT}
+      - MINIO_USE_SSL=${MINIO_USE_SSL}
+      - MINIO_ACCESS_KEY=${MINIO_ACCESS_KEY}
+      - MINIO_SECRET_KEY=${MINIO_SECRET_KEY}
+      - MINIO_BUCKET=${MINIO_BUCKET}
+
+      # SSL/TLS
+      - NODE_TLS_REJECT_UNAUTHORIZED=${NODE_TLS_REJECT_UNAUTHORIZED}
+    restart: unless-stopped
+    networks:
+      - ai-chatbot-network
+
+networks:
+  ai-chatbot-network:
+    driver: bridge
