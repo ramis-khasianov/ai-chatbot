@@ -14,7 +14,6 @@ import { useArtifact } from "@/hooks/use-artifact";
 import type { Document } from "@/lib/db/schema";
 import { cn, fetcher } from "@/lib/utils";
 import type { ArtifactKind, UIArtifact } from "./artifact";
-import { CodeEditor } from "./code-editor";
 import { DocumentToolCall, DocumentToolResult } from "./document";
 import { InlineDocumentSkeleton } from "./document-skeleton";
 import { FileIcon, FullscreenIcon, ImageIcon, LoaderIcon } from "./icons";
@@ -249,7 +248,6 @@ const DocumentContent = ({ document }: { document: Document }) => {
     "h-[257px] overflow-y-scroll rounded-b-2xl border border-t-0 dark:border-zinc-700 dark:bg-muted",
     {
       "p-4 sm:px-14 sm:py-16": document.kind === "text",
-      "p-0": document.kind === "code",
     }
   );
 
@@ -268,12 +266,6 @@ const DocumentContent = ({ document }: { document: Document }) => {
     <div className={containerClassName}>
       {document.kind === "text" ? (
         <Editor {...commonProps} onSaveContent={handleSaveContent} />
-      ) : document.kind === "code" ? (
-        <div className="relative flex w-full flex-1">
-          <div className="absolute inset-0">
-            <CodeEditor {...commonProps} onSaveContent={handleSaveContent} />
-          </div>
-        </div>
       ) : document.kind === "sheet" ? (
         <div className="relative flex size-full flex-1 p-4">
           <div className="absolute inset-0">

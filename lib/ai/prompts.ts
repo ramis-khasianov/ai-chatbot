@@ -135,10 +135,10 @@ export const updateDocumentPrompt = (
 ) => {
   let mediaType = "документа";
 
-  if (type === "code") {
-    mediaType = "фрагмента кода";
-  } else if (type === "sheet") {
+  if (type === "sheet") {
     mediaType = "таблицы";
+  } else if (type === "image") {
+    mediaType = "изображения";
   }
 
   return `Улучши следующее содержимое ${mediaType} на основе данного запроса.
