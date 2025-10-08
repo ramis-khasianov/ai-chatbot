@@ -9,13 +9,12 @@ export type ChatModel = {
 export const chatModels: ChatModel[] = [
   {
     id: "chat-model",
-    name: "Grok Vision",
-    description: "Продвинутая мультимодальная модель с возможностями обработки изображений и текста",
+    name: process.env.CHAT_MODEL_TITLE || "Qwen3 32B",
+    description: "Быстрая модель без режима размышлений",
   },
   {
     id: "chat-model-reasoning",
-    name: "Grok Reasoning",
-    description:
-      "Использует продвинутое цепочное рассуждение для решения сложных задач",
+    name: process.env.REASONING_MODEL_TITLE || "Qwen3 32B Thinking",
+    description: "Модель с углубленным режимом размышлений для сложных задач",
   },
 ];

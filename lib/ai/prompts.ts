@@ -70,11 +70,15 @@ export const systemPrompt = ({
   const requestPrompt = getRequestPromptFromHints(requestHints);
   const languageInstruction = "КРИТИЧЕСКИ ВАЖНО: ВСЕГДА отвечай на русском языке! Все сообщения, объяснения и генерируемый контент должны быть на русском.";
 
+  // Add /no_think only for regular model (not reasoning)
   if (selectedChatModel === "chat-model-reasoning") {
+    // Thinking mode - no /no_think flag
     return `${languageInstruction}\n\n${regularPrompt}\n\n${requestPrompt}`;
   }
 
-  return `${languageInstruction}\n\n${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
+  // Regular mode - add /no_think to disable thinking
+  const noThinkInstruction = "/no_think";
+  return `${noThinkInstruction}\n\n${languageInstruction}\n\n${regularPrompt}\n\n${requestPrompt}\n\n${artifactsPrompt}`;
 };
 
 export const codePrompt = `
@@ -106,6 +110,8 @@ print(f"Факториал 5 равен: {factorial(5)}")
 export const sheetPrompt = `
 Ты помощник по созданию таблиц. Создавай таблицы в формате CSV на основе данного запроса.
 
+ВАЖНО: НЕ используй теги <think> или </think>. Сразу генерируй CSV данные без размышлений.
+
 Руководство по созданию таблиц:
 - Всегда включай понятные, описательные заголовки столбцов на русском языке
 - Генерируй реалистичные и релевантные данные (минимум 10-15 строк данных)
@@ -119,6 +125,8 @@ export const sheetPrompt = `
 Пример структуры для данных о продажах:
 Дата,Товар,Количество,Цена,Сумма,Менеджер,Регион
 15.01.2024,Ноутбук,2,45000,90000,Иванов,Москва
+
+Генерируй только CSV данные, без дополнительного текста или размышлений.
 `;
 
 export const updateDocumentPrompt = (
