@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev --turbo",
     "build": "tsx lib/db/migrate && next build",
+    "build:docker": "next build",
     "start": "next start",
+    "start:docker": "npx tsx lib/db/migrate.ts && node server.js",
     "lint": "npx ultracite@latest check",
     "format": "npx ultracite@latest fix",
     "db:generate": "drizzle-kit generate",
@@ -56,6 +58,7 @@
     "framer-motion": "^11.3.19",
     "geist": "^1.3.1",
     "lucide-react": "^0.446.0",
+    "minio": "^8.0.6",
     "nanoid": "^5.0.8",
     "next": "15.3.0-canary.31",
     "next-auth": "5.0.0-beta.25",
