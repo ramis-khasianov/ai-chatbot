@@ -25,6 +25,7 @@ import { myProvider } from "@/lib/ai/providers";
 import type { Attachment, ChatMessage } from "@/lib/types";
 import type { AppUsage } from "@/lib/usage";
 import { cn } from "@/lib/utils";
+import { uploadFileChunked, shouldUseChunkedUpload } from "@/lib/chunked-upload";
 import { Context } from "./elements/context";
 import {
   PromptInput,
@@ -127,7 +128,9 @@ function PureMultimodalInput({
   };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [uploadQueue, setUploadQueue] = useState<string[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<
+    Array<{ name: string; progress: number }>
+  >([]);
 
   const submitForm = useCallback(() => {
     window.history.replaceState({}, "", `/chat/${chatId}`);
@@ -169,10 +172,37 @@ function PureMultimodalInput({
   ]);
 
   const uploadFile = useCallback(async (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
+      // Use chunked upload for large files (> 100MB)
+      if (shouldUseChunkedUpload(file)) {
+        const result = await uploadFileChunked({
+          file,
+          onProgress: (progress) => {
+            // Update progress in upload queue
+            setUploadQueue((queue) =>
+              queue.map((item) =>
+                item.name === file.name
+                  ? { ...item, progress: Math.round(progress) }
+                  : item
+              )
+            );
+          },
+          onChunkComplete: (chunkNumber, totalChunks) => {
+            console.log(`Uploaded chunk ${chunkNumber}/${totalChunks}`);
+          },
+        });
+
+        return {
+          url: result.url,
+          name: result.pathname,
+          contentType: result.contentType,
+        };
+      }
+
+      // Use regular upload for small files
+      const formData = new FormData();
+      formData.append("file", file);
+
       const response = await fetch("/api/files/upload", {
         method: "POST",
         body: formData,
@@ -210,7 +240,7 @@ function PureMultimodalInput({
     async (event: ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
 
-      setUploadQueue(files.map((file) => file.name));
+      setUploadQueue(files.map((file) => ({ name: file.name, progress: 0 })));
 
       try {
         const uploadPromises = files.map((file) => uploadFile(file));
@@ -284,15 +314,16 @@ function PureMultimodalInput({
               />
             ))}
 
-            {uploadQueue.map((filename) => (
+            {uploadQueue.map((item) => (
               <PreviewAttachment
                 attachment={{
                   url: "",
-                  name: filename,
+                  name: item.name,
                   contentType: "",
                 }}
                 isUploading={true}
-                key={filename}
+                uploadProgress={item.progress}
+                key={item.name}
               />
             ))}
           </div>

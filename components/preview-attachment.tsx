@@ -7,10 +7,12 @@ import { Button } from "./ui/button";
 export const PreviewAttachment = ({
   attachment,
   isUploading = false,
+  uploadProgress,
   onRemove,
 }: {
   attachment: Attachment;
   isUploading?: boolean;
+  uploadProgress?: number;
   onRemove?: () => void;
 }) => {
   const { name, url, contentType } = attachment;
@@ -35,8 +37,22 @@ export const PreviewAttachment = ({
       )}
 
       {isUploading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/50">
-          <Loader size={16} />
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50">
+          {uploadProgress !== undefined ? (
+            <>
+              <div className="mb-1 font-medium text-white text-xs">
+                {Math.round(uploadProgress)}%
+              </div>
+              <div className="h-1 w-12 overflow-hidden rounded-full bg-white/30">
+                <div
+                  className="h-full bg-white transition-all duration-300"
+                  style={{ width: `${uploadProgress}%` }}
+                />
+              </div>
+            </>
+          ) : (
+            <Loader size={16} />
+          )}
         </div>
       )}
 
